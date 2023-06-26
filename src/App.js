@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getSummonerStats, getSoloDuosMatchesFromThisWeek } from './components/Leaderboard';
+import { } from './components/Leaderboard';
 
 import './App.css';
 

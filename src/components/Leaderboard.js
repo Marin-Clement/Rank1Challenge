@@ -145,3 +145,5 @@ async function getSoloDuosMatchesFromThisWeek(summonerName) {
       await new Promise((resolve) => setTimeout(resolve, 500));
   }
 }
+
+getSoloDuosMatchesFromThisWeek("NaturallyGifted")
