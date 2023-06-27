@@ -36,7 +36,6 @@ async function getSoloDuosMatchesFromThisWeek(puuid) {
     return await response.json();
 }
 
-
 // export methods
 
 module.exports = {

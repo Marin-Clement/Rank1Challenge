@@ -1,74 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { } from './components/Leaderboard';
+import axios from 'axios';
 
 import './App.css';
 
-const usernames = ["NaturallyGifted", "Maustach", "TH1S 1S THE WAY", "KLMea", "Goulou Goulou", "khumeia","FSO"]
-
 function App() {
-  const [winrates, setWinrates] = useState([]);
-  const [rank, setRank] = useState([]);
-  const [win, setWin] = useState([]);
-  const [loss, setLoss] = useState([]);
-
-  const [matchweek, setMatchweek] = useState([]);
+  const [summonerStats, setSummonerStats] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [shouldUpdate, setShouldUpdate] = useState(true); // New state variable
+
+  const fetchSummonerStats = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/allSummonerNames');
+      const summonerNames = response.data;
+
+      const stats = [];
+      for (let i = 0; i < summonerNames.length; i++) {
+        const summoner = summonerNames[i];
+        const response = await axios.get(`http://localhost:3001/summonerStats/${summoner}`);
+        const summonerStats = response.data;
+        stats.push(summonerStats);
+      }
+      setSummonerStats(stats);
+    } catch (error) {
+      setError(error);
+    }
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    async function fetchWinrates() {
-      try {
-        const winratePromises = usernames.map((username, index) =>
-          new Promise((resolve) =>
-            setTimeout(async () => {
-              const result = await getSummonerStats(username);
-              resolve(result);
-            }, index * 500)
-          )
-        );
-        const results = await Promise.all(winratePromises);
-        setWinrates(results.map((result) => result[0]));
-        setRank(results.map((result) => result[1]));
-        setWin(results.map((result) => result[2]));
-        setLoss(results.map((result) => result[3]));
-        setIsLoading(false);
-      } catch (error) {
-        setError(error);
-        setIsLoading(false);
-      }
-    }
+    fetchSummonerStats().then(r => console.log(r));
+  }, []);
 
-    async function fetchMatches() {
-      try {
-        const matchPromises = usernames.map((username, index) =>
-          new Promise((resolve) =>
-            setTimeout(async () => {
-              const result = await getSoloDuosMatchesFromThisWeek(username);
-              resolve(result);
-            }, index * 500)
-          )
-        );
-        const results = await Promise.all(matchPromises);
-        setMatchweek(results.map((result) => result[0]));
-        setIsLoading(false);
-      } catch (error) {
-        setError(error);
-        setIsLoading(false);
-      }
-    }
-
-    if (shouldUpdate) {
-      fetchMatches().then((r) => console.log(r));
-      fetchWinrates().then((r) => console.log(r));
-      setShouldUpdate(false); // Reset the flag after updating the data
-    }
-  }, [shouldUpdate]); // Listen for changes in the shouldUpdate state
-
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsLoading(true);
     setError(null);
-    setShouldUpdate(true); // Trigger data update
+
+    try {
+      await axios.post('http://localhost:3001/refreshAll');
+      await fetchSummonerStats();
+    } catch (error) {
+      setError(error);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -79,58 +52,67 @@ function App() {
         </button>
         {isLoading && <p>Loading...</p>}
         {error && <p>Error: {error.message}</p>}
-        {!isLoading && !error && (
-          <Leaderboard
-            winrates={winrates}
-            usernames={usernames}
-            rank={rank}
-            win={win}
-            loss={loss}
-            matchweek={matchweek}
-          />
-        )}
+        {!isLoading && !error && <Leaderboard summonerStats={summonerStats} />}
       </header>
     </div>
   );
 }
 
-function Leaderboard({ winrates, usernames, rank, win, loss, matchweek }) {
-  const leaderboardData = usernames.map((username, index) => ({
-    username: username.replace(/%20/g, ' '),
-    winrate: winrates[index],
-    rank: rank[index],
-    win: win[index],
-    loss: loss[index],
-    matchweek: matchweek[index],
+function Leaderboard({ summonerStats }) {
+  const leaderboardData = summonerStats.map((stats) => ({
+    username: stats.summoner,
+    tier : stats.tier,
+    rank: stats.rank,
+    leaguePoints: stats.leaguePoints,
+    win: stats.wins,
+    loss: stats.losses,
+    winrate: stats.winRate,
   }));
 
-  // Sort by game this week
-  leaderboardData.sort((a, b) => b.matchweek - a.matchweek);
+  leaderboardData.sort((a, b) => b.winrate - a.winrate);
 
   return (
     <div className="leaderboard">
       {leaderboardData.map((data, index) => (
         <div className="leaderboard-item" key={index}>
           <span className="username">{data.username}</span>
-          <img className="rank" src={`ranked-icon/emblem-${data.rank}.png`} alt={data.rank} />
+          <img
+            className="rank"
+            src={`ranked-icon/emblem-${data.tier}.png`}
+            alt={data.rank}
+          />
           <div className="details">
             <div className="winrate">
               <span className="label">Win Rate </span>
-              <span className="value" style={{ color: data.winrate > 70 ? '#e79061': data.winrate > 60 ? '#9CF6F6FF' : data.winrate > 50 ? 'lightgreen' : 'lightcoral' }}>{data.winrate}%</span>
+              <span
+                className="value"
+                style={{
+                  color:
+                    data.winrate > 70
+                      ? '#e79061'
+                      : data.winrate > 60
+                      ? '#9CF6F6FF'
+                      : data.winrate > 50
+                      ? 'lightgreen'
+                      : 'lightcoral',
+                }}
+              >
+                {data.winrate}%
+              </span>
             </div>
             <div className="record">
               <span className="value">
-                {data.win}<span className="win">W </span>
-                / {data.loss}<span className="loss">L</span>
+                {data.win}
+                <span className="win">W </span>
+                / {data.loss}
+                <span className="loss">L</span>
               </span>
             </div>
             <br />
             <div className="week">
               <span className="label">Weekly:</span>
               <br />
-              <span className="value">
-                SoloQ: {data.matchweek}
-              </span>
+              <span className="value">SoloQ: {data.matchweek}</span>
             </div>
           </div>
         </div>
