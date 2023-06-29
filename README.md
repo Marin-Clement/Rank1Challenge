@@ -69,4 +69,5 @@
 <p>The project uses a MySQL database to store summoner and match data. The database is hosted locally and can be configured in the code. 📊</p>
 <h2>Contributing 🤝</h2>
 <p>Contributions, issues and feature requests are welcome. 🙌</p>
-<h2>Made with ❤️ by <a href="https://github.com/Marin-Clement">Marin Clement</a></h2>
+<h1></h1>
+<h3>Made with ❤️ by <a href="https://github.com/Marin-Clement">Marin Clement</a></h3>
