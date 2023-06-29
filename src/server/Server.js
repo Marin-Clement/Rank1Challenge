@@ -274,7 +274,7 @@ async function getSoloDuosMatchesFromThisWeek(summonerName, soloDuosIdDB) {
     }
     const match = await api.getMatch(matchList[i]);
     await addMatchDB(matchList[i], match);
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 }
 
