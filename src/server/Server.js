@@ -1,6 +1,5 @@
 const Mysql2 = require('mysql2/promise');
 const api = require('./Api');
-const axios = require('axios');
 const express = require('express');
 const cors = require('cors');
 
@@ -20,7 +19,7 @@ const pool = Mysql2.createPool({
   password: 'Minecraft01@',
   database: 'ranked_leader_board',
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 0,
   queueLimit: 0
 });
 
@@ -42,14 +41,28 @@ async function addSummonerStatsDB(summonerName) {
   }
 }
 
+// delete summoner stats from the database
+async function deleteSummonerStatsDB(summonerName) {
+    const connection = await pool.getConnection();
+    try {
+        const query = 'DELETE FROM summonerstats WHERE summoner = ?';
+        const values = [summonerName];
+        await connection.query(query, values);
+    } catch (error) {
+        console.log(error);
+    } finally {
+        connection.release();
+    }
+}
+
 // add summoner to the database
 async function addSummonerDB(summonerName) {
   const connection = await pool.getConnection();
   try {
     const summoner = await api.getSummoner(summonerName);
-    const { id, puuid } = summoner;
-    const query = 'INSERT INTO summoner (summoner_name, summoner_id, puuid) VALUES (?, ?, ?)';
-    const values = [summonerName, id, puuid];
+    const { id, puuid , profileIconId } = summoner;
+    const query = 'INSERT INTO summoner (summoner_name, summoner_id, puuid, icon_id) VALUES (?, ?, ?, ?)';
+    const values = [summonerName, id, puuid, profileIconId];
     await connection.query(query, values);
   } catch (error) {
     console.log(error);
@@ -70,6 +83,7 @@ async function deleteSummonerDB(summonerName) {
     console.log(error);
   } finally {
     connection.release();
+    await deleteSummonerStatsDB(summonerName);
   }
 }
 
@@ -137,10 +151,10 @@ async function getSummonerMatchDB(summonerName) {
   try {
     const summoner = await getSummonerDB(summonerName);
     const puuid = summoner[0]['puuid'];
-    const query = 'SELECT * FROM matchdata WHERE summoners LIKE ?';
+    // select all matches id in the database return the most recent one first (DESC)
+    const query = 'SELECT match_id FROM matchdata WHERE summoners LIKE ? ORDER BY date DESC';
     const values = [`%${puuid}%`];
     const [rows] = await connection.query(query, values);
-    console.log(rows.length);
     return rows;
   } catch (error) {
     console.log(error);
@@ -160,6 +174,74 @@ async function getAllMatchesDB() {
     console.log(error);
   }
 }
+
+async function getMatchDetailsDB(matchId, summonerName) {
+    const connection = await pool.getConnection();
+    try {
+        const query = 'SELECT match_data FROM matchdata WHERE match_id = ?';
+        const values = [matchId];
+        const [rows] = await connection.query(query, values);
+        const matchData = rows[0].match_data;
+        const summoner = await getSummonerDB(summonerName);
+        const summonerPuuid = summoner[0]['puuid'];
+        const summonerTeam = matchData.info.participants.find(participant => participant.puuid === summonerPuuid).teamId;
+        const isWin = matchData.info.teams.find(team => team.teamId === summonerTeam).win;
+        const champion = matchData.info.participants.find(participant => participant.puuid === summonerPuuid).championName;
+        const kills = matchData.info.participants.find(participant => participant.puuid === summonerPuuid).kills;
+        const deaths = matchData.info.participants.find(participant => participant.puuid === summonerPuuid).deaths;
+        const assists = matchData.info.participants.find(participant => participant.puuid === summonerPuuid).assists;
+        const kda = Math.round((kills + assists) / deaths * 100) / 100;
+        const cs = matchData.info.participants.find(participant => participant.puuid === summonerPuuid).totalMinionsKilled + matchData.info.participants.find(participant => participant.puuid === summonerPuuid).neutralMinionsKilled;
+        const visionScore = matchData.info.participants.find(participant => participant.puuid === summonerPuuid).visionScore;
+        const daysSincePlayed = Math.round((new Date() - new Date(matchData.info.gameCreation)) / (1000 * 60 * 60 * 24));
+        return {
+            isWin,
+            champion,
+            kills,
+            deaths,
+            assists,
+            kda,
+            cs,
+            visionScore,
+            daysSincePlayed
+        }
+    } catch (error) {
+        console.log(error);
+    } finally {
+        connection.release();
+    }
+}
+
+// return dictionary of match per day for a specific summoner
+async function getSummonerMatchesPerDayDB(summonerName) {
+    const connection = await pool.getConnection();
+    try {
+        const summoner = await getSummonerDB(summonerName);
+        const puuid = summoner[0]['puuid'];
+        const query = 'SELECT * FROM matchdata WHERE summoners LIKE ?';
+        const values = [`%${puuid}%`];
+        const [rows] = await connection.query(query, values);
+        const matchesPerDay = {};
+        for (let i = 0; i < rows.length; i++) {
+        const date = new Date(rows[i].date);
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+        const dateStr = `${day}/${month}/${year}`;
+        if (matchesPerDay[dateStr]) {
+            matchesPerDay[dateStr].push(rows[i]);
+        } else {
+            matchesPerDay[dateStr] = [rows[i]];
+        }
+        }
+        return matchesPerDay;
+    } catch (error) {
+        console.log(error);
+    } finally {
+        connection.release();
+    }
+}
+
 
 // Delete matches older than 7 days
 async function deleteOldMatchesDB() {
@@ -240,13 +322,15 @@ async function refreshAll() {
 ///////////////////////// RETRIEVE METHODS ///////////////////////
 //////////////////////////////////////////////////////////////////
 
-async function getAllSummonerNames() {
+async function getAllSummonerNamesIcons() {
   const summoners = await getAllSummonersDB();
   const summonerNames = [];
+  const summonerIconsIds = [];
   for (let i = 0; i < summoners.length; i++) {
     summonerNames.push(summoners[i].summoner_name);
+    summonerIconsIds.push(summoners[i].icon_id);
   }
-  return summonerNames;
+  return { summonerNames, summonerIconsIds };
 }
 
 async function getSummonerStats(summonerName) {
@@ -255,7 +339,7 @@ async function getSummonerStats(summonerName) {
     summoner: summoner[0].summoner,
     tier: summoner[0].tier,
     rank: summoner[0].rank,
-    leaguePoints: summoner[0].leaguepoint,
+    leaguePoints: summoner[0].leaguePoint,
     wins: summoner[0].win,
     losses: summoner[0].loose,
     winRate: Math.round((summoner[0].win / (summoner[0].win + summoner[0].loose)) * 100),
@@ -268,7 +352,7 @@ async function getSummonerStats(summonerName) {
 //////////////////////// FOR FRONTEND ////////////////////////////
 //////////////////////////////////////////////////////////////////
 app.get('/allSummonerNames', async (req, res) => {
-  const summonerNames = await getAllSummonerNames();
+  const summonerNames = await getAllSummonerNamesIcons();
   res.json(summonerNames);
 });
 
@@ -277,14 +361,32 @@ app.get('/summonerStats/:summonerName', async (req, res) => {
   const summonerStats = await getSummonerStats(summonerName);
   res.json(summonerStats);
 });
-
 app.get('/summonerMatches/:summonerName', async (req, res) => {
   const summonerName = req.params.summonerName;
   const summonerMatches = await getSummonerMatchDB(summonerName);
   res.json(summonerMatches);
 });
 
+app.get('/summonerMatchesDetails/:matchId/:summonerId', async (req, res) => {
+    const matchId = req.params.matchId;
+    const summonerId = req.params.summonerId;
+    const matchDetails = await getMatchDetailsDB(matchId, summonerId);
+    res.json(matchDetails);
+});
+
 app.post('/refreshAll', async (req, res) => {
   await refreshAll();
   res.json({ message: 'Data refreshed successfully' });
-});
+})
+
+app.post('/deleteSummoner/:summonerName', async (req, res) => {
+    const summonerName = req.params.summonerName;
+    await deleteSummonerDB(summonerName);
+    res.json({ message: 'Summoner deleted successfully' });
+})
+
+app.post('/addSummoner/:summonerName', async (req, res) => {
+    const summonerName = req.params.summonerName;
+    await addSummonerDB(summonerName);
+    res.json({ message: 'Summoner added successfully' });
+})

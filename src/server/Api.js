@@ -8,6 +8,7 @@ const matchServer = config.matchServer;
 async function getSummoner(summonerName) {
   const url = `https://${server}.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summonerName}?api_key=${riotKey}`;
   const response = await fetch(url);
+  console.log(response);
   return await response.json();
 }
 
@@ -42,5 +43,5 @@ module.exports = {
     getSummoner,
     getSummonerStats,
     getMatch,
-    getSoloDuosMatchesFromThisWeek
+    getSoloDuosMatchesFromThisWeek,
 }

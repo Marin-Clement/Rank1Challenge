@@ -1,0 +1,402 @@
+/* Global Styles */
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  background-color: #282c34;
+  background-size: 400% 400%;
+    padding: 0;
+    margin: 0;
+    color: white;
+}
+
+/* Header Styles */
+.header-dashboard {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+  font-size: 1.2em;
+  margin: 0 20px 20px 20px;
+  padding: 0;
+}
+
+.header-dashboard img {
+  width: 75px;
+  height: 75px;
+  margin: 0 20px 0 20px;
+  object-fit: cover;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.header-dashboard h1 {
+    font-size: 2em;
+    font-weight: bold;
+    margin: 0;
+    padding: 0;
+}
+
+/* App Styles */
+.App {
+  text-align: center;
+  margin-top: 50px;
+}
+/* Heading Styles */
+h1 {
+  font-size: 3em;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+/* Refresh Button Styles */
+.refresh-button {
+  background-color: #85C02A;
+  border: none;
+  color: #ffffff;
+  padding: 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 1.2em;
+  margin-bottom: 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.refresh-button:hover {
+  background-color: #6aa21b;
+  transform: scale(1.05); /* Add scale effect on hover */
+}
+
+.refresh-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px #85C02A; /* Add a subtle outline when button is focused */
+}
+/* Leaderboard Styles */
+.leaderboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+/* Leaderboard Item Styles */
+.leaderboard-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 800px;
+  padding: 10px 20px 10px 20px;
+  background-color: #2c333d;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  animation: fadeIn 1s;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+
+.leaderboard-item:hover {
+  background-color: #3c444f;
+}
+
+
+/* Leaderboard Item Content Styles */
+.details {
+  padding-right: 1em;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+    align-items: center;
+}
+
+.summoner-icon {
+  width: 75px;
+  height: 75px;
+  object-fit: cover;
+  margin-right: 10px;
+  margin-left: 10px;
+  border-radius: 50%;
+}
+
+.username {
+  font-weight: bold;
+  color: #fff;
+  font-size: 1.4em;
+  text-align: left;
+  margin-left: 10px;
+  width: 200px;
+}
+
+.winrate {
+  color: #fff;
+}
+
+.rank-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.rank {
+  width: 5em;
+  height: 5em;
+  object-fit: cover;
+  scale: 3;
+  margin-top: 0.5em;
+  padding-right: 0.7em;
+  pointer-events: none;
+}
+
+.tier {
+  object-fit: cover;
+  margin-right: 2.1em;
+  pointer-events: none;
+}
+
+.win {
+  color: lightgreen;
+}
+
+.loss {
+  color: lightcoral;
+}
+
+/* Additional Info Styles */
+.additional-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 10px;
+}
+
+.additional-info p {
+  color: #fff;
+  margin-bottom: 5px;
+}
+
+/* Username Styles */
+.username {
+  color: #fff;
+}
+
+/* Winrate Styles */
+.winrate {
+  color: #fff;
+  font-weight: bold;
+  font-size: 1em;
+}
+
+/* Record Styles */
+.record {
+  margin-top: 0.3em;
+  color: #fff;
+  font-size: 1em;
+}
+
+.record .value {
+  font-size: 1.1em;
+}
+
+.ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.matches-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.match-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  padding: 10px;
+  background-color: #2c333d;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.match-details img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  margin-top: 5px;
+  border-radius: 70%;
+}
+
+.kda {
+  font-weight: bold;
+  font-size: 1.2em;
+}
+.league-points {
+  font-weight: bold;
+  font-size: 1.2em;
+  padding-top: 20px;
+}
+.matches-number {
+  color: lightgray;
+  font-weight: bold;
+  font-size: 1.2em;
+  padding-top: 20px;
+}
+
+.match-win {
+  border-left: 5px solid;
+  border-left-color: #79e779;
+  background: linear-gradient(to right, lightgreen -50%, #292e38 50%, #292e38 100%);
+}
+
+.match-win .champion-icon {
+  border: 3px solid lightgreen;
+}
+.match-loss {
+  border-left: 5px solid;
+  border-left-color: #ea6c6c;
+  background: linear-gradient(to right, lightcoral -100%, #292e38 50%, #292e38 100%);
+}
+
+.match-loss .champion-icon {
+  border: 3px solid lightcoral;
+}
+
+/* Footer Styles */
+.footer {
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 0.8em;
+}
+
+.footer a {
+  color: #fff;
+  font-weight: bold;
+}
+
+.footer p {
+  margin-right: 5px;
+  font-weight: bold;
+  font-size: 1.5em;
+  text-underline-offset: 5px;
+}
+.footer a:hover {
+  color: #80e2fd;
+}
+
+.lds-ring {
+  display: inline-block;
+  position: relative;
+  width: 48px;
+  height: 48px;
+}
+.lds-ring div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  margin: 8px;
+  border: 4px solid #fed;
+  border-radius: 50%;
+  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: #fed transparent transparent transparent;
+}
+.lds-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+.lds-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+.lds-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .leaderboard-item {
+        width: 90%;
+    }
+
+    .username {
+        font-size: 1em;
+    }
+
+    .rank {
+        width: 3em;
+        height: 3em;
+    }
+
+    .rank-container {
+        margin-right: 1em;
+    }
+
+    .record {
+        font-size: 0.8em;
+    }
+
+    .record .value {
+        font-size: 1em;
+    }
+
+    .additional-info img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .additional-info {
+        margin-top: 5px;
+    }
+
+    .match-details {
+        width: 90%;
+    }
+
+    .match-details img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .kda {
+        font-size: 1em;
+    }
+
+    .footer {
+        font-size: 0.7em;
+    }
+}
