@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
+const config = require('./config.json');
 
 app.use(cors());
 
@@ -16,7 +17,7 @@ app.listen(3001, () => {
 const pool = Mysql2.createPool({
   host: 'localhost',
   user: 'root',
-  password: 'Minecraft01@',
+  password: config.password,
   database: 'ranked_leader_board',
   waitForConnections: true,
   connectionLimit: 0,
